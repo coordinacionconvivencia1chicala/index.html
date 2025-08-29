@@ -1,0 +1,661 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manual de Convivencia - Colegio Colsubsidio Chicalá</title>
+    <!-- Incluye Tailwind CSS para el estilo -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap');
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(to right, #312e81, #8b5cf6, #ec4899);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+        }
+        .container {
+            max-width: 900px;
+        }
+        .card {
+            background-color: white;
+            border-radius: 1.5rem;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+            backdrop-filter: blur(10px);
+        }
+        .quiz-btn {
+            background-color: #fcd34d; /* Amarillo */
+            color: #1f2937; /* Gris oscuro para el texto */
+            padding: 1rem 2rem;
+            border-radius: 9999px;
+            font-weight: bold;
+            transition: transform 0.2s, box-shadow 0.2s;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .quiz-btn:hover {
+            background-color: #fbbf24; /* Amarillo más oscuro en hover */
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+        }
+        .illustration {
+            width: 150px;
+            height: 150px;
+        }
+        .question-card {
+            background-color: #e2e8f0;
+            border-radius: 1rem;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+        }
+        .answer-option {
+            background-color: #f7fafc;
+            padding: 1rem;
+            border-radius: 0.75rem;
+            border: 2px solid #cbd5e0;
+            cursor: pointer;
+            transition: background-color 0.2s, border-color 0.2s;
+        }
+        .answer-option:hover {
+            background-color: #e2e8f0;
+            border-color: #a0aec0;
+        }
+        .answer-option.selected {
+            background-color: #fef08a; /* Amarillo claro para la selección */
+            border-color: #facc15; /* Amarillo más oscuro para el borde */
+        }
+        .submit-btn {
+            background-color: #fcd34d; /* Amarillo */
+            color: #1f2937; /* Gris oscuro para el texto */
+            padding: 1rem 2rem;
+            border-radius: 0.75rem;
+            font-weight: bold;
+            transition: background-color 0.2s;
+        }
+        .submit-btn:hover {
+            background-color: #fbbf24; /* Amarillo más oscuro en hover */
+        }
+        #results {
+            border-top: 2px solid #cbd5e0;
+            margin-top: 2rem;
+            padding-top: 2rem;
+        }
+        .result-item {
+            margin-bottom: 1rem;
+            padding: 1rem;
+            border-radius: 0.75rem;
+            background-color: #f7fafc;
+            border: 1px solid #e2e8f0;
+        }
+        .correct-answer {
+            color: #2563eb; /* Azul para respuesta correcta */
+            font-weight: bold;
+        }
+        .incorrect-answer {
+            color: #e53e3e;
+            font-weight: bold;
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            justify-content: center;
+            align-items: center;
+        }
+        .modal-content {
+            background-color: #fff;
+            padding: 2rem;
+            border-radius: 1.5rem;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+            text-align: center;
+        }
+        .module-header {
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        .module-header:hover {
+            background-color: #f0f4f8;
+        }
+        .module-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease-out;
+        }
+        .module-content.active {
+            max-height: 500px;
+            transition: max-height 0.5s ease-in;
+        }
+    </style>
+</head>
+<body class="p-8">
+
+    <div id="welcome-section" class="container mx-auto p-8 card text-center">
+        <h1 class="text-4xl font-bold text-blue-800 mb-4">¡Todos por un territorio seguro! 🛡️</h1>
+        <p class="text-xl text-blue-700 mb-8">Conviértete en un experto en convivencia escolar</p>
+        <div class="flex flex-col md:flex-row justify-center items-center gap-8 mb-8">
+            <img id="header-image" src="https://primaria3naranjos.wordpress.com/wp-content/uploads/2016/11/convivencia.jpg?w=640" alt="Imagen de un grupo de niños con la palabra convivencia" class="rounded-lg w-full max-w-xs md:max-w-sm object-cover">
+        </div>
+        
+        <div class="flex flex-wrap justify-center gap-4">
+            <button type="button" id="start-learning-btn" class="submit-btn">Zona de Aprendizaje 📚</button>
+            <button type="button" id="start-quiz-btn" class="quiz-btn">Zona de Evaluación ✅</button>
+        </div>
+    </div>
+
+    <div id="learning-section" class="container mx-auto p-8 card hidden">
+        <h2 class="text-3xl font-bold text-blue-800 mb-6 text-center">Zona de Aprendizaje 📖</h2>
+        
+        <p class="text-lg text-blue-700 mb-8 text-center">Explora los módulos para sintetizar la información del manual de convivencia, enfocada en el debido proceso y las faltas.</p>
+
+        <!-- Módulo 1: Conducto Regular y Mediación -->
+        <div class="bg-gray-100 rounded-lg shadow-sm mb-4">
+            <div class="module-header p-4 flex justify-between items-center font-semibold text-blue-700">
+                <span>1. El Conducto Regular y la Mediación 🤝</span>
+                <span class="transform transition-transform duration-300 rotate-0">▼</span>
+            </div>
+            <div class="module-content px-4">
+                <p class="py-2 text-blue-700">Cuando surge un conflicto, el docente debe ser el primer mediador. El **conducto regular** es la ruta formal para escalar el problema. Inicia con el docente, luego se involucra el director de grupo, seguido por el coordinador de convivencia u orientación escolar. La mediación busca una solución pacífica y reparadora antes de escalar el caso.</p>
+            </div>
+        </div>
+
+        <!-- Módulo 2: Due Process y Faltas Tipo I -->
+        <div class="bg-gray-100 rounded-lg shadow-sm mb-4">
+            <div class="module-header p-4 flex justify-between items-center font-semibold text-blue-700">
+                <span>2. Faltas Leves (Tipo I) y el Debido Proceso ⚖️</span>
+                <span class="transform transition-transform duration-300 rotate-0">▼</span>
+            </div>
+            <div class="module-content px-4">
+                <p class="py-2 text-blue-700">Las faltas Tipo I, como una interrupción en clase o el uso de un lenguaje inadecuado, se resuelven de manera pedagógica y en el aula. El **debido proceso** exige que siempre se escuche la versión del estudiante y se dialogue sobre la situación antes de cualquier registro o acción.</p>
+            </div>
+        </div>
+
+        <!-- Módulo 3: Protocolo para Faltas Tipo II y III -->
+        <div class="bg-gray-100 rounded-lg shadow-sm mb-4">
+            <div class="module-header p-4 flex justify-between items-center font-semibold text-blue-700">
+                <span>3. Faltas Graves y Muy Graves (Tipo II y III) 🚨</span>
+                <span class="transform transition-transform duration-300 rotate-0">▼</span>
+            </div>
+            <div class="module-content px-4">
+                <p class="py-2 text-blue-700">Las faltas Tipo II (ej. agresiones verbales o plagio) y Tipo III (ej. porte de armas o agresiones físicas) requieren una acción inmediata. El docente debe salvaguardar la integridad de los involucrados, documentar la situación y reportarla de inmediato a la coordinación para que se active la **ruta de atención** correspondiente. Es crucial garantizar el derecho a la defensa y la versión libre del estudiante en todo momento.</p>
+            </div>
+        </div>
+
+        <!-- Módulo 4: Comunicación con la Comunidad Educativa -->
+        <div class="bg-gray-100 rounded-lg shadow-sm mb-4">
+            <div class="module-header p-4 flex justify-between items-center font-semibold text-blue-700">
+                <span>4. Estrategias de Comunicación y Canales Formales 📞</span>
+                <span class="transform transition-transform duration-300 rotate-0">▼</span>
+            </div>
+            <div class="module-content px-4">
+                <p class="py-2 text-blue-700">Cuando un docente recibe una queja o denuncia por parte de un padre de familia, la respuesta debe ser canalizada a través de los medios institucionales, como el director de grupo o la coordinación. Nunca se debe resolver de forma informal, confrontar a los estudiantes o padres, o sancionar sin el debido proceso.</p>
+            </div>
+        </div>
+
+        <div class="mt-8 text-center">
+            <button id="back-from-learning-btn" class="submit-btn">Volver al inicio 🏠</button>
+        </div>
+    </div>
+
+    <div id="quiz-section" class="container mx-auto p-8 card hidden">
+        <h2 class="text-3xl font-bold text-blue-800 mb-6 text-center">Zona de Evaluación 📝</h2>
+        <form id="quiz-form">
+            <div class="mb-4">
+                <label for="quiz-name" class="block text-blue-700 text-sm font-bold mb-2">Nombre Completo:</label>
+                <input type="text" id="quiz-name" name="name" class="shadow appearance-none border rounded-lg w-full py-2 px-3 text-blue-700 leading-tight focus:outline-none focus:shadow-outline" required placeholder="Nombre completo del docente">
+            </div>
+            <div class="mb-6">
+                <label for="start-area" class="block text-blue-700 text-sm font-bold mb-2">Área a la que Pertenece:</label>
+                <input type="text" id="quiz-area" name="area" class="shadow appearance-none border rounded-lg w-full py-2 px-3 text-blue-700 leading-tight focus:outline-none focus:shadow-outline" required>
+            </div>
+
+            <div id="questions-container">
+                <!-- Las preguntas se cargarán aquí dinámicamente -->
+            </div>
+
+            <button type="submit" id="submit-quiz-btn" class="submit-btn w-full mt-8">Finalizar Evaluación 🚀</button>
+        </form>
+
+        <div id="results" class="hidden">
+            <h3 class="text-2xl font-bold text-blue-800 mb-4 text-center">Resultados 🎉</h3>
+            <div id="reward-container" class="text-center"></div>
+            <p id="score-text" class="text-xl text-center font-bold"></p>
+            <div id="feedback-container" class="mt-4">
+                <!-- Aquí se mostrará la retroalimentación -->
+            </div>
+            <div class="mt-8 text-center flex flex-col items-center gap-4">
+                <button id="show-strategies-btn" class="quiz-btn">Ver Estrategias de Convivencia 💡</button>
+                <button id="back-from-quiz-btn" class="submit-btn">Volver al inicio 🏠</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="strategies-section" class="container mx-auto p-8 card hidden">
+        <h2 class="text-3xl font-bold text-blue-800 mb-6 text-center">Estrategias de Convivencia Escolar 🎯</h2>
+        <p class="text-lg text-blue-700 mb-8 text-center">
+            El siguiente listado de estrategias te permitirá fortalecer la convivencia escolar, promoviendo la armonía y la prevención de conflictos en el aula.
+        </p>
+        <ul class="list-disc list-inside space-y-4 text-blue-700 text-base md:text-lg">
+            <li>
+                <span class="font-semibold">✅ Establecer expectativas claras:</span> Definir y comunicar de forma realista las normas de comportamiento al inicio del año escolar.
+            </li>
+            <li>
+                <span class="font-semibold">🔍 Explorar las razones de las normas:</span> Involucrar a los estudiantes en un diálogo para que comprendan el propósito de cada regla y su beneficio para el grupo.
+            </li>
+            <li>
+                <span class="font-semibold">🧑‍🏫 Modelar el comportamiento apropiado:</span> Actuar como un ejemplo positivo de respeto y colaboración para los estudiantes.
+            </li>
+            <li>
+                <span class="font-semibold">🗣️ Fomentar la comunicación abierta:</span> Crear un ambiente de confianza para que los estudiantes se sientan cómodos expresando sus inquietudes.
+            </li>
+            <li>
+                <span class="font-semibold">🤝 Enseñar habilidades de resolución de conflictos:</span> Guiar a los estudiantes a encontrar soluciones constructivas y pacíficas a sus problemas.
+            </li>
+            <li>
+                <span class="font-semibold">🧩 Usar el aprendizaje cooperativo:</span> Organizar actividades que requieran trabajo en equipo para fortalecer las relaciones interpersonales.
+            </li>
+            <li>
+                <span class="font-semibold">✍️ Permitir la participación en la creación de normas:</span> Incluir a los estudiantes en la definición de las reglas para que se sientan dueños y responsables de ellas.
+            </li>
+            <li>
+                <span class="font-semibold">🔄 Revisar y actualizar las normas periódicamente:</span> Adaptar las reglas de convivencia con el tiempo, solicitando la opinión de los estudiantes.
+            </li>
+            <li>
+                <span class="font-semibold">😊 Mantener una actitud positiva:</span> Fomentar un ambiente de aula respetuoso y positivo a través del propio ejemplo.
+            </li>
+        </ul>
+        <div class="mt-8 text-center">
+            <button id="back-from-strategies-btn" class="submit-btn">Volver al inicio 🏠</button>
+        </div>
+    </div>
+
+    <!-- Modal para mensajes -->
+    <div id="modal" class="modal">
+        <div class="modal-content">
+            <p id="modal-message" class="text-blue-800 text-lg mb-4"></p>
+            <button id="modal-close-btn" class="submit-btn">Aceptar</button>
+        </div>
+    </div>
+
+    <script type="module">
+        const welcomeSection = document.getElementById('welcome-section');
+        const learningSection = document.getElementById('learning-section');
+        const quizSection = document.getElementById('quiz-section');
+        const strategiesSection = document.getElementById('strategies-section');
+        
+        const startLearningBtn = document.getElementById('start-learning-btn');
+        const startQuizBtn = document.getElementById('start-quiz-btn');
+        const backFromLearningBtn = document.getElementById('back-from-learning-btn');
+        const backFromQuizBtn = document.getElementById('back-from-quiz-btn');
+        const showStrategiesBtn = document.getElementById('show-strategies-btn');
+        const backFromStrategiesBtn = document.getElementById('back-from-strategies-btn');
+        
+        const quizForm = document.getElementById('quiz-form');
+        const questionsContainer = document.getElementById('questions-container');
+        const resultsDiv = document.getElementById('results');
+        const rewardContainer = document.getElementById('reward-container');
+        const scoreText = document.getElementById('score-text');
+        const feedbackContainer = document.getElementById('feedback-container');
+        const modal = document.getElementById('modal');
+        const modalMessage = document.getElementById('modal-message');
+        const modalCloseBtn = document.getElementById('modal-close-btn');
+
+        // Lógica para los módulos colapsables
+        document.querySelectorAll('.module-header').forEach(header => {
+            header.addEventListener('click', () => {
+                const content = header.nextElementSibling;
+                const icon = header.querySelector('span:last-child');
+                content.classList.toggle('active');
+                if (content.classList.contains('active')) {
+                    icon.style.transform = 'rotate(180deg)';
+                } else {
+                    icon.style.transform = 'rotate(0deg)';
+                }
+            });
+        });
+
+        // --- Firebase/Firestore Setup ---
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, addDoc, setLogLevel } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        let db;
+        let auth;
+        let userId;
+
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+        const firebaseConfig = JSON.parse(typeof __firebase_config !== 'undefined' ? __firebase_config : '{}');
+        const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+
+        setLogLevel('debug');
+
+        const initFirebase = async () => {
+            try {
+                const app = initializeApp(firebaseConfig);
+                db = getFirestore(app);
+                auth = getAuth(app);
+
+                if (initialAuthToken) {
+                    await signInWithCustomToken(auth, initialAuthToken);
+                } else {
+                    await signInAnonymously(auth);
+                }
+                userId = auth.currentUser?.uid || crypto.randomUUID();
+                console.log("Firebase initialized. User ID:", userId);
+            } catch (error) {
+                console.error("Error initializing Firebase:", error);
+                showModal("Error al inicializar la base de datos. Por favor, inténtalo de nuevo más tarde.");
+            }
+        };
+
+        initFirebase();
+
+        // Preguntas de evaluación
+        const rawQuestions = [
+            {
+                question: "1. Durante una clase, un estudiante acusa a otro de haberlo insultado en redes sociales. El ambiente en el aula se torna tenso. El docente debe intervenir de inmediato. ¿Cuál sería el procedimiento más adecuado según el manual? 🗣️",
+                options: [
+                    "El docente debe reportar directamente al coordinador, evitando involucrarse en la situación.",
+                    "El docente les llama la atención a los involucrados e informa al director de grupo para activar el conducto regular.",
+                    "El docente convoca a todos los padres de familia de la clase para socializar la situación.",
+                    "El docente notifica la situación a orientación escolar para validar la situación en compañía de coordinación de convivencia *"
+                ]
+            },
+            {
+                question: "2. Un docente sorprende a un estudiante consumiendo alcohol dentro de la institución. ¿Qué pasos debe seguir el docente según el debido proceso? 🚫🍺",
+                options: [
+                    "Retira inmediatamente al estudiante del aula y comunica a la Policía como lo indica el protocolo.",
+                    "Registra la situación en el observador del estudiante, informa al coordinador y garantiza que el estudiante pueda dar su versión de los hechos.*",
+                    "Llama directamente al acudiente para que recoja al estudiante y decomisa los elementos encontrados para entregarlos al rector.",
+                    "Aplica una sanción directa y definitiva en compañía del coordinador de convivencia."
+                ]
+            },
+            {
+                question: "3. Dos estudiantes se enfrentan físicamente en el descanso. El docente de guardia interviene para detener la agresión. Según el manual, cuál debe ser el rol inicial del docente en este caso? 🥊",
+                options: [
+                    "Aislar a los estudiantes y convocar al comité de convivencia sin mediar.",
+                    "Promover una acción reparadora inmediata entre los estudiantes y reportar el hecho a la coordinación para continuar el proceso. *",
+                    "Llamar a los padres de los estudiantes y que en compañía de los adultos las partes involucradas resuelvan el conflicto.",
+                    "Suspender a los estudiantes por un tiempo definido y avalado por una resolución rectoral"
+                ]
+            },
+            {
+                question: "4. Un docente manipula las calificaciones en el sistema institucional. El docente de área detecta la irregularidad. ¿Qué acciones corresponden al docente según el manual? 📉",
+                options: [
+                    "Dialogar con el estudiante hacer acuerdos verbales porque solo ocurrió una vez y cerrar el caso sin generar registro.",
+                    "Reportar la situación como falta grave, informar de inmediato a la coordinación académica y garantizar el derecho a versión libre del estudiante.*",
+                    "Informar únicamente a sus colegas de área para estar prevenidos.",
+                    "Esperar a que el estudiante reincida para poder tomar medidas formalmente e indicar un proceso con la respectiva coordinación."
+                ]
+            },
+            {
+                question: "5. En un recorrido por el colegio, un docente encuentra a un estudiante amenazando a otro con un objeto cortopunzante. ¿Cuál debe ser la actuación inmediata del docente según el manual? 🔪",
+                options: [
+                    "Intervenir para salvaguardar la integridad, reportar de inmediato a coordinación y activar la ruta de atención correspondiente al considerarse falta muy grave.*",
+                    "Esperar a que el estudiante se calme y luego conversar informalmente con él y con su compañero para realizar un espacio de diálogo y mediación atendiendo a la justicia restaurativa.",
+                    "Llamar directamente a la familia y entregar el caso a los acudientes sin registrar el hecho.",
+                    "Resolver el caso con sus propios criterios, sin necesidad de seguir protocolos."
+                ]
+            },
+            {
+                question: "6. Una docente recibe por correo de un padre de familia una denuncia de acoso escolar hacia su hijo. De acuerdo con el manual, ¿cuál es la forma correcta de proceder? 📧",
+                options: [
+                    "Guardar la información como confidencial y no reportarla hasta confirmarla con otros estudiantes y solicitarles la versión libre escrita para luego avisar a sus acudientes.",
+                    "Orientar al acudiente para que realice el reporte formal por los canales institucionales y, al mismo tiempo, remitir la situación a coordinación para activar las instancias de mediación y comité de convivencia. *",
+                    "Publicar un comunicado general al grupo de padres para advertir sobre el caso y además realizar un taller desde la clase de FIVE como acción de promoción y prevención de posible acosos escolar.",
+                    "Reunir inmediatamente al grupo de estudiantes y confrontarlos para aclarar la situación."
+                ]
+            },
+            {
+                question: "7. Un estudiante interrumpe repetidamente la clase con bromas ofensivas. El docente ha dialogado con él sin lograr cambios. ¿Cuál sería el siguiente paso correcto según el conducto regular? 🗣️",
+                options: [
+                    "Reportar directamente al director de curso para que tomen medidas.",
+                    "Escalar el caso a la coordinación, registrando la situación formalmente.*",
+                    "Comunicar de inmediato a los padres en plena clase para que lo regañen en casa.",
+                    "Aplicar una sanción pedagógica según indica Manual de Convivencia."
+                ]
+            },
+            {
+                question: "8. Un docente sorprende a un estudiante manipulando el candado de un salón para entrar sin permiso. ¿Cuál debería ser el procedimiento más adecuado? 🔓",
+                options: [
+                    "Tratarlo como falta leve y aplicar solo una amonestación verbal.",
+                    "Considerar la falta como muy grave entendiendo que puede ser un posible caso de robo o hurto que se debe reportar de inmediato a coordinación*",
+                    "Permitir que el estudiante explique a sus compañeros lo sucedido como castigo público.",
+                    "Considerar la acción como falta grave, reportarla formalmente y garantizar el derecho al debido proceso."
+                ]
+            },
+            {
+                question: "9. Un estudiante amenaza a un compañero con difundir fotos íntimas si no le da dinero. El docente es informado por otro estudiante. ¿Cómo debería actuar el docente? 📸",
+                options: [
+                    "Mantenerlo en reserva hasta confirmar si la amenaza se cumple.",
+                    "Reportar inmediatamente a coordinación y orientación para el protocolo de activación la ruta de atención *",
+                    "Hablar únicamente con el estudiante acusado para evitar escándalos y luego hablarlo con el equipo directivo de manera que se tomen las medidas pertinentes según Ley 1620",
+                    "Resolverlo con un acuerdo informal entre los dos estudiantes."
+                ]
+            },
+            {
+                question: "10. Un padre envía un correo al docente quejándose de que su hijo fue insultado por un compañero en el recreo. ¿Qué debe hacer el docente según las estrategias de comunicación del manual? 📧",
+                options: [
+                    "Responder directamente sancionando al supuesto agresor.",
+                    "Formalizar el reporte por los canales institucionales, y al mismo tiempo informar al director de grupo o coordinación.*",
+                    "Reunir a todos los estudiantes del curso para identificar al agresor y luego citar a los padres de familia para iniciar el debido proceso",
+                    "No responder hasta tener pruebas de lo ocurrido."
+                ]
+            }
+        ];
+
+        // Procesar las preguntas para identificar la respuesta correcta y limpiar el asterisco
+        const questions = rawQuestions.map(q => {
+            let correctAnswer = '';
+            const cleanedOptions = q.options.map(option => {
+                // Si la opción incluye un asterisco, se considera la respuesta correcta.
+                if (option.includes('*')) {
+                    correctAnswer = option.replace('*', '').trim();
+                    return correctAnswer;
+                }
+                return option;
+            });
+            return {
+                question: q.question,
+                options: cleanedOptions,
+                correctAnswer: correctAnswer
+            };
+        });
+
+        let selectedAnswers = {};
+        
+        function renderQuestions() {
+            questionsContainer.innerHTML = '';
+            questions.forEach((q, index) => {
+                const questionElement = document.createElement('div');
+                questionElement.classList.add('question-card');
+                questionElement.innerHTML = `
+                    <p class="font-semibold text-blue-800 mb-4">${q.question}</p>
+                    <div class="space-y-3">
+                        ${q.options.map(option => `
+                            <div class="answer-option" data-question-index="${index}" data-answer="${option}">
+                                <p>${option}</p>
+                            </div>
+                        `).join('')}
+                    </div>
+                `;
+                questionsContainer.appendChild(questionElement);
+            });
+            document.querySelectorAll('.answer-option').forEach(option => {
+                option.addEventListener('click', (e) => {
+                    const questionIndex = e.currentTarget.dataset.questionIndex;
+                    const answer = e.currentTarget.dataset.answer;
+                    
+                    document.querySelectorAll(`.answer-option[data-question-index="${questionIndex}"]`).forEach(opt => {
+                        opt.classList.remove('selected');
+                    });
+
+                    e.currentTarget.classList.add('selected');
+                    selectedAnswers[questionIndex] = answer;
+                });
+            });
+        }
+        
+        function showModal(message) {
+            modalMessage.textContent = message;
+            modal.style.display = 'flex';
+        }
+
+        startLearningBtn.addEventListener('click', () => {
+            welcomeSection.classList.add('hidden');
+            learningSection.classList.remove('hidden');
+        });
+
+        startQuizBtn.addEventListener('click', () => {
+            selectedAnswers = {};
+            quizForm.reset();
+            renderQuestions();
+            welcomeSection.classList.add('hidden');
+            quizSection.classList.remove('hidden');
+            resultsDiv.classList.add('hidden');
+            quizForm.classList.remove('hidden');
+        });
+
+        backFromLearningBtn.addEventListener('click', () => {
+            learningSection.classList.add('hidden');
+            welcomeSection.classList.remove('hidden');
+        });
+
+        backFromQuizBtn.addEventListener('click', () => {
+            quizSection.classList.add('hidden');
+            welcomeSection.classList.remove('hidden');
+        });
+
+        modalCloseBtn.addEventListener('click', () => {
+            modal.style.display = 'none';
+        });
+
+        showStrategiesBtn.addEventListener('click', () => {
+            quizSection.classList.add('hidden');
+            strategiesSection.classList.remove('hidden');
+        });
+
+        backFromStrategiesBtn.addEventListener('click', () => {
+            strategiesSection.classList.add('hidden');
+            welcomeSection.classList.remove('hidden');
+        });
+
+        quizForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const name = document.getElementById('quiz-name').value;
+            const area = document.getElementById('quiz-area').value;
+            
+            if (!name || !area) {
+                showModal("Por favor, ingresa tu nombre y área para continuar.");
+                return;
+            }
+
+            if (Object.keys(selectedAnswers).length !== questions.length) {
+                showModal("Por favor, responde todas las preguntas antes de finalizar.");
+                return;
+            }
+
+            let score = 0;
+            const quizResults = [];
+            questions.forEach((q, index) => {
+                const isCorrect = selectedAnswers[index] === q.correctAnswer;
+                if (isCorrect) {
+                    score++;
+                }
+                quizResults.push({
+                    question: q.question,
+                    selectedAnswer: selectedAnswers[index],
+                    correctAnswer: q.correctAnswer,
+                    isCorrect: isCorrect
+                });
+            });
+
+            // Lógica para mostrar la recompensa
+            let rewardHtml = '';
+            if (score === 10) {
+                rewardHtml = '<p class="text-6xl my-4 animate-pulse">🏆</p><p class="text-2xl font-bold text-yellow-500">¡Felicitaciones! ¡Has ganado el trofeo!</p>';
+            } else if (score === 9) {
+                rewardHtml = '<p class="text-6xl my-4 animate-bounce">🏅</p><p class="text-2xl font-bold text-gray-500">¡Excelente! ¡Te llevas una medalla!</p>';
+            } else if (score === 8) {
+                rewardHtml = '<p class="text-6xl my-4 animate-spin">⭐</p><p class="text-2xl font-bold text-yellow-500">¡Muy bien! ¡Has ganado una estrella!</p>';
+            } else {
+                rewardHtml = '<p class="text-6xl my-4">📚</p><p class="text-2xl font-bold text-blue-500">Sigue aprendiendo. ¡Vuelve a la zona de estudio!</p>';
+            }
+
+            // --- INICIO: Lógica para enviar a Google Sheets con Apps Script ---
+            const appsScriptURL = 'https://script.google.com/a/macros/colsubsidio.edu.co/s/AKfycbxctmnWkKOd_GKUicJX9GJGfGJwif-48tvp83VD26WK_z2geXFgm4rRnE-boi6W7RQfzw/exec'; // Reemplaza con tu URL de despliegue
+
+            const formData = {
+                teacherName: name,
+                teacherArea: area,
+                score: score,
+                quizResults: quizResults
+            };
+            
+            try {
+                const response = await fetch(appsScriptURL, {
+                    method: 'POST',
+                    mode: 'no-cors', // Importante para evitar errores CORS
+                    cache: 'no-cache',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(formData)
+                });
+
+                // Dado que usamos 'no-cors', no podemos leer la respuesta, solo sabemos que la solicitud se envió.
+                // Si la solicitud falla, la promesa se rechazará.
+                console.log("Datos enviados a Google Apps Script. No se puede verificar la respuesta debido a la configuración de 'no-cors'.");
+                showModal("Resultados guardados en Google Sheets exitosamente. ¡Gracias por participar!");
+            } catch (e) {
+                console.error("Error al enviar los datos a Google Apps Script:", e);
+                showModal("Error al guardar los resultados en Google Sheets. Por favor, inténtalo de nuevo.");
+                return;
+            }
+
+            // --- FIN: Lógica para enviar a Google Sheets con Apps Script ---
+            
+            // Lógica para guardar en Firestore
+            const quizzesCollectionRef = collection(db, `artifacts/${appId}/public/data/quizzes`);
+            try {
+                await addDoc(quizzesCollectionRef, {
+                    userId: userId,
+                    name: name,
+                    area: area,
+                    score: score,
+                    totalQuestions: questions.length,
+                    results: quizResults,
+                    timestamp: new Date()
+                });
+                console.log("Resultados guardados en Firestore.");
+            } catch (e) {
+                console.error("Error al guardar en Firestore:", e);
+                showModal("Error al guardar los resultados. Por favor, inténtalo de nuevo.");
+                return;
+            }
+
+
+            // Mostrar resultados en la UI
+            scoreText.textContent = `Tu puntuación: ${score} de ${questions.length}`;
+            rewardContainer.innerHTML = rewardHtml;
+            feedbackContainer.innerHTML = quizResults.map((res, index) => `
+                <div class="result-item">
+                    <p class="font-semibold text-blue-800">${res.question}</p>
+                    <p class="text-sm">Tu respuesta: <span class="${res.isCorrect ? 'text-blue-500' : 'text-red-500'} font-medium">${res.selectedAnswer}</span></p>
+                    ${!res.isCorrect ? `<p class="text-sm">Respuesta correcta: <span class="correct-answer">${res.correctAnswer}</span></p>` : ''}
+                </div>
+            `).join('');
+
+            quizForm.classList.add('hidden');
+            resultsDiv.classList.remove('hidden');
+        });
+    </script>
+</body>
+</html>
